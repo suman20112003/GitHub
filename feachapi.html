@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Github Repo Fetcher</title>
+</head>
+<body>
+    <div class="container">
+        <form id="github-form">
+            <input type="text" id="username" placeholder="GitHub username...">
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <ul id="repo-list"></ul>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('github-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value;
+
+                fetch(`https://api.github.com/users/${username}/repos`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch data: ${response.status} - ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const repoList = document.getElementById('repo-list');
+                        repoList.innerHTML = '';
+
+                        if (data.length === 0) {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = 'No repositories found for this user.';
+                            repoList.appendChild(listItem);
+                        } else {
+                            data.forEach(repo => {
+                                const listItem = document.createElement('li');
+                                const link = document.createElement('a');
+                                link.href = repo.html_url;
+                                link.target = '_blank';
+                                link.textContent = repo.name;
+
+                                listItem.appendChild(link);
+                                repoList.appendChild(listItem);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        const repoList = document.getElementById('repo-list');
+                        repoList.innerHTML = '';
+                        const errorItem = document.createElement('li');
+                        errorItem.textContent = error.message; 
+                        repoList.appendChild(errorItem);
+                    });
+            });
+        });
+    </script>
+</body>
+</html>
